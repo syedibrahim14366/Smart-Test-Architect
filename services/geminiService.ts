@@ -79,24 +79,26 @@ export const generateTestCases = async (
 
 export const analyzeTestSuite = async (source: RequirementSource, testCases: TestCase[]): Promise<AnalysisData> => {
   const ai = getAI();
-  // We sample test cases if the suite is huge for the analysis prompt
+  // Sample test cases for analysis context
   const sampleCases = testCases.slice(0, 50);
 
   const prompt = `
-    Analyze the following test suite against the provided requirements.
-    1. Identify Risk Areas (High/Medium/Low) based on feature complexity.
-    2. Select critical Smoke Test IDs and Sanity Test IDs from the provided list.
-    3. Calculate coverage metrics (Functional, UI, Edge Cases, Security) as percentages.
-    4. Provide UX Predictions: How will users experience these features? Predict friction and suggest improvements.
+    Analyze the following test suite against the requirements.
+    1. Identify Risk Areas (High/Medium/Low) based on complexity.
+    2. Select Smoke (critical path) and Sanity (focused logic) IDs.
+    3. Assign a Priority ('High', 'Medium', or 'Low') to each test case based on business value and impact. 
+    4. Calculate Coverage Metrics as percentages.
+    5. Provide UX Predictions and friction scores.
     
-    Test Cases Sample: ${JSON.stringify(sampleCases)}
+    Test Cases Sample (IDs to prioritize): ${JSON.stringify(sampleCases.map(tc => tc.id))}
     
     Output ONLY valid JSON matching this structure:
     {
-      "summary": "Overall analysis summary",
+      "summary": "string",
       "riskAreas": [{ "area": "string", "level": "High|Medium|Low", "reasoning": "string" }],
-      "smokeTestIds": ["TC-ID"],
-      "sanityTestIds": ["TC-ID"],
+      "smokeTestIds": ["string"],
+      "sanityTestIds": ["string"],
+      "priorityMaps": [{ "id": "string", "priority": "High|Medium|Low" }],
       "coverageMetrics": { "functional": 0-100, "ui": 0-100, "edgeCases": 0-100, "security": 0-100 },
       "uxPredictions": [{ "feature": "string", "prediction": "string", "frictionScore": 1-10, "suggestions": ["string"] }]
     }
@@ -121,8 +123,31 @@ export const analyzeTestSuite = async (source: RequirementSource, testCases: Tes
 
 export const simulateExecution = async (testCases: TestCase[]): Promise<string> => {
   const ai = getAI();
-  const testCasesToSimulate = testCases.slice(0, 15); 
-  const prompt = `Simulate Playwright execution for: ${JSON.stringify(testCasesToSimulate)}`;
+  
+  // Feature: Prioritize simulation execution
+  // Sort test cases: High > Medium > Low > undefined
+  const sortedCases = [...testCases].sort((a, b) => {
+    const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
+    const pA = a.priority ? priorityOrder[a.priority] : 3;
+    const pB = b.priority ? priorityOrder[b.priority] : 3;
+    return pA - pB;
+  });
+
+  const testCasesToSimulate = sortedCases.slice(0, 15); 
+  
+  const prompt = `
+    Simulate Playwright execution for the following test cases.
+    Note: These have been prioritized by AI for execution. Focus on the High priority ones first.
+    
+    Test Cases for Simulation:
+    ${JSON.stringify(testCasesToSimulate, null, 2)}
+    
+    For each test case:
+    - State if it's High/Medium/Low priority.
+    - Narrative the steps taken.
+    - Report Pass/Fail status.
+  `;
+  
   const response: GenerateContentResponse = await ai.models.generateContent({
     model: GEMINI_TEXT_MODEL,
     contents: prompt,

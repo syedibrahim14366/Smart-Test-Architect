@@ -12,7 +12,8 @@ import {
   Zap, 
   Users, 
   TrendingUp,
-  BarChart3
+  BarChart3,
+  Star
 } from 'lucide-react';
 
 interface AnalysisDashboardProps {
@@ -60,6 +61,9 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data, test
     );
   };
 
+  const highPriorityCases = testCases.filter(tc => tc.priority === 'High');
+  const highPriorityCount = highPriorityCases.length;
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -97,6 +101,44 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data, test
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
+          <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden shadow-lg shadow-sky-500/5">
+            <div className="p-4 border-b border-slate-700/50 bg-slate-800/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Star className="text-sky-400 w-5 h-5 fill-sky-400/20" />
+                <h3 className="font-bold text-slate-100">Prioritization Strategy</h3>
+              </div>
+              <span className="text-xs bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full border border-sky-500/20 font-bold uppercase tracking-wider">
+                {highPriorityCount} High Priority Tests
+              </span>
+            </div>
+            <div className="p-6">
+               <p className="text-sm text-slate-300 leading-relaxed mb-6">
+                AI has analyzed your requirements and prioritized your test suite. 
+                Below are all high-priority cases covering core business logic and critical data flows. 
+                Simulation runs these first to provide immediate feedback on vital application paths.
+              </p>
+              <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {highPriorityCases.length > 0 ? (
+                  highPriorityCases.map(tc => (
+                    <div key={tc.id} className="flex items-center justify-between p-3 bg-slate-900/40 border border-slate-700/50 rounded-lg hover:border-sky-500/30 transition-all">
+                       <div className="flex items-center gap-3">
+                         <span className="text-[10px] font-black text-red-400/80 uppercase px-1.5 py-0.5 bg-red-400/5 border border-red-400/20 rounded">
+                           {tc.id}
+                         </span>
+                         <span className="text-xs text-slate-200 line-clamp-1">{tc.description}</span>
+                       </div>
+                       <span className="text-[10px] font-bold text-red-400 uppercase shrink-0 ml-4">Critical</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-slate-500 text-sm">
+                    No high-priority test cases identified.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden">
             <div className="p-4 border-b border-slate-700/50 bg-slate-800/60 flex items-center gap-2">
               <ShieldAlert className="text-red-400 w-5 h-5" />
@@ -114,27 +156,28 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data, test
               ))}
             </div>
           </div>
+        </div>
 
-          <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div className="space-y-6">
+           <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden">
             <div className="p-4 border-b border-slate-700/50 bg-slate-800/60 flex items-center gap-2">
               <Users className="text-violet-400 w-5 h-5" />
-              <h3 className="font-bold text-slate-100">User Experience Predictions</h3>
+              <h3 className="font-bold text-slate-100">UX Experience Prediction</h3>
             </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-6 space-y-4">
               {data.uxPredictions.map((ux, i) => (
                 <div key={i} className="bg-slate-900/40 p-4 rounded-xl border border-slate-700/30">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-bold text-sky-300">{ux.feature}</h4>
+                    <h4 className="font-bold text-sky-300 text-sm">{ux.feature}</h4>
                     <div className="flex items-center gap-1.5">
-                      <TrendingUp size={14} className={ux.frictionScore > 6 ? 'text-red-400' : 'text-emerald-400'} />
-                      <span className="text-xs font-mono">Friction: {ux.frictionScore}/10</span>
+                      <span className="text-[10px] font-mono opacity-60">Friction: {ux.frictionScore}/10</span>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-400 mb-4 italic">"{ux.prediction}"</p>
+                  <p className="text-xs text-slate-400 mb-3 italic">"{ux.prediction}"</p>
                   <div className="space-y-1.5">
-                    {ux.suggestions.map((s, si) => (
-                      <div key={si} className="flex items-start gap-2 text-xs text-slate-300">
-                        <Zap size={12} className="text-amber-400 mt-0.5 shrink-0" />
+                    {ux.suggestions.slice(0, 2).map((s, si) => (
+                      <div key={si} className="flex items-start gap-2 text-[10px] text-slate-300">
+                        <Zap size={10} className="text-amber-400 mt-0.5 shrink-0" />
                         <span>{s}</span>
                       </div>
                     ))}
@@ -143,9 +186,7 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data, test
               ))}
             </div>
           </div>
-        </div>
 
-        <div className="space-y-6">
           <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl">
             <div className="p-4 border-b border-slate-700/50 bg-slate-800/60 flex items-center gap-2">
               <Flame className="text-orange-400 w-5 h-5" />
@@ -160,7 +201,7 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data, test
                 ))}
               </div>
               <p className="mt-4 text-xs text-slate-500 leading-relaxed">
-                Critical path tests that ensure the core application functionality remains operational.
+                Critical path tests prioritized for immediate deployment health checks.
               </p>
             </div>
           </div>
@@ -179,17 +220,9 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data, test
                 ))}
               </div>
               <p className="mt-4 text-xs text-slate-500 leading-relaxed">
-                Focused tests to verify that specific bug fixes or changes work as expected.
+                Logic verification tests prioritized for verifying stability after updates.
               </p>
             </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-indigo-600/20 to-sky-600/20 p-6 rounded-2xl border border-white/5 flex flex-col items-center text-center">
-            <BarChart3 className="w-10 h-10 text-white/50 mb-3" />
-            <h4 className="text-white font-bold">Deep Analysis Available</h4>
-            <p className="text-slate-400 text-xs mt-2">
-              Gemini has completed a deep scan of requirements and generated UX heatmaps and risk matrices.
-            </p>
           </div>
         </div>
       </div>

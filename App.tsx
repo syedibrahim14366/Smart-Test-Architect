@@ -67,6 +67,17 @@ const App: React.FC = () => {
     setError(null);
     try {
       const analysis = await analyzeTestSuite(reqSource, testCases);
+      
+      // Feature: Apply Priorities to Test Cases
+      if (testCases && analysis.priorityMaps) {
+        const priorityMap = new Map(analysis.priorityMaps.map(m => [m.id, m.priority]));
+        const updatedCases = testCases.map(tc => ({
+          ...tc,
+          priority: priorityMap.get(tc.id) || 'Medium'
+        }));
+        setTestCases(updatedCases);
+      }
+      
       setAnalysisData(analysis);
       setAppStage('analysisView');
     } catch (err) {
@@ -129,7 +140,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center justify-center py-24">
             <Spinner size="large" />
             <h3 className="mt-8 text-slate-200 text-2xl font-bold">
-              {appStage === 'displayResults' ? 'Deep AI Analysis...' : 'Generating Intelligence...'}
+              {appStage === 'displayResults' ? 'Deep AI Analysis & Prioritizing...' : 'Generating Intelligence...'}
             </h3>
             {targetCount > 0 && progress < targetCount && (
                <div className="mt-4 w-full max-w-xs bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">

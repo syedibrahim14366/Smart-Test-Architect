@@ -4,6 +4,7 @@ export interface TestCase {
   description: string;
   steps: string; // Multi-line string with numbered steps
   expectedResult: string;
+  priority?: 'High' | 'Medium' | 'Low'; // AI prioritized field
 }
 
 export type DownloadFormat = 'doc' | 'csv' | 'pdf' | 'json' | 'analysis-pdf';
@@ -30,6 +31,7 @@ export interface AnalysisData {
   riskAreas: RiskArea[];
   smokeTestIds: string[];
   sanityTestIds: string[];
+  priorityMaps: { id: string; priority: 'High' | 'Medium' | 'Low' }[];
   coverageMetrics: {
     functional: number;
     ui: number;
