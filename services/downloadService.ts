@@ -7,16 +7,19 @@ const generateJsonContent = (testCases: TestCase[]): string => JSON.stringify(te
 const generateDocContent = (testCases: TestCase[], srsText: string): string => {
   let content = `AI Quality Report\n\nRequirements Context: ${srsText.substring(0, 500)}...\n\nTest Cases:\n\n`;
   testCases.forEach(tc => {
-    content += `${tc.id}: ${tc.description}\nSteps:\n${tc.steps}\nExpected: ${tc.expectedResult}\n\n`;
+    // Fix: Changed 'description' to 'title' as per TestCase interface definition
+    content += `${tc.id}: ${tc.title}\nSteps:\n${tc.steps}\nExpected: ${tc.expectedResult}\n\n`;
   });
   return content;
 };
 
 const generateCsvContent = (testCases: TestCase[]): string => {
-  const header = "ID,Description,Steps,Expected Result\n";
+  // Fix: Changed header from Description to Title
+  const header = "ID,Title,Steps,Expected Result\n";
   return header + testCases.map(tc => {
     const q = (f: string) => `"${f.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
-    return [q(tc.id), q(tc.description), q(tc.steps), q(tc.expectedResult)].join(",");
+    // Fix: Changed 'description' to 'title'
+    return [q(tc.id), q(tc.title), q(tc.steps), q(tc.expectedResult)].join(",");
   }).join("\n");
 };
 
@@ -78,7 +81,8 @@ export const downloadFile = (testCases: TestCase[], format: DownloadFormat, srsT
       let y = 30;
       testCases.slice(0, 30).forEach(tc => {
         doc.setFontSize(10);
-        doc.text(`${tc.id}: ${tc.description}`, 20, y);
+        // Fix: Changed 'description' to 'title'
+        doc.text(`${tc.id}: ${tc.title}`, 20, y);
         y += 10;
         if (y > 280) { doc.addPage(); y = 20; }
       });

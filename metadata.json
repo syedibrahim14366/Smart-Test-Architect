@@ -1,5 +1,5 @@
 {
-  "name": "Gemini AI Test Case Generator & Executor",
-  "description": "An application that uses Gemini AI to generate test cases from an SRS, allows users to choose the number of test cases, and simulates their execution. Users can also download the generated test cases.",
+  "name": "LeanISTQB TestGen",
+  "description": "An ISTQB-compliant AI test case generator that transforms requirements into precision-engineered test nodes using Gemini AI.",
   "requestFramePermissions": []
 }

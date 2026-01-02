@@ -4,28 +4,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini AI Test Case Generator</title>
+  <title>LeanISTQB TestGen | AI Test Architect</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --glow-color: #0ea5e9;
+      --accent-color: #6366f1;
+      --bg-dark: #01040a;
+      --panel-bg: rgba(10, 15, 25, 0.75);
+    }
+
     body {
-      font-family: 'Inter', sans-serif; /* A nice default sans-serif font */
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: #f0f6fc;
+      overflow-x: hidden;
+      line-height: 1.6;
     }
-    /* Custom scrollbar for webkit browsers */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+
+    .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Cinematic Neural Background */
+    .neural-container {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: radial-gradient(circle at 50% 50%, #0a1020 0%, #01040a 100%);
+      overflow: hidden;
     }
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
+
+    #neural-canvas {
+      position: absolute;
+      inset: 0;
+      opacity: 0.4;
     }
+
+    .ambient-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      animation: breathe 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes breathe {
+      from { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
+      to { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* AI Core Pulse */
+    .ai-core-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 600px;
+      height: 600px;
+      border: 1px solid rgba(14, 165, 233, 0.1);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: rotate-ring 20s linear infinite;
+    }
+
+    @keyframes rotate-ring {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Scanline Overlay */
+    .overlay-vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Glassmorphism Refinement */
+    .glass-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(14, 165, 233, 0.15);
+      box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        inset 0 0 1px 1px rgba(255, 255, 255, 0.03);
+      position: relative;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb {
-      background: #888;
+      background: rgba(14, 165, 233, 0.2);
       border-radius: 10px;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--glow-color); }
   </style>
 <script type="importmap">
 {
@@ -40,7 +127,88 @@
 }
 </script>
 </head>
-<body class="bg-slate-900 text-slate-100">
+<body>
+  <div class="neural-container">
+    <canvas id="neural-canvas"></canvas>
+    <div class="ambient-glow"></div>
+    <div class="ai-core-ring"></div>
+    <div class="ai-core-ring" style="width: 400px; animation-direction: reverse; animation-duration: 15s;"></div>
+  </div>
+  <div class="overlay-vignette"></div>
+  <div class="grain"></div>
+
+  <script>
+    const canvas = document.getElementById('neural-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 80;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = Math.random() * 1.5 + 0.5;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.5)';
+        ctx.fill();
+      }
+    }
+
+    function init() {
+      resize();
+      particles = Array.from({ length: particleCount }, () => new Particle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      // Draw connections
+      ctx.strokeStyle = 'rgba(14, 165, 233, 0.08)';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+    init();
+    animate();
+  </script>
+
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
